@@ -1,7 +1,9 @@
+const path = require('path');
+const fs = require('fs/promises');
 const { Client } = require('pg');
 const {
   database,
-  tablename,
+  tablenames,
   user,
   host,
   password,
@@ -17,12 +19,15 @@ const client = new Client({
 });
 client.connect();
 
-const init = async () => {
-  const columns = await client.query(
-    `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '${tablename}';`
-  );
+let script = '';
 
-  const getConstraints = async (type, table) =>
+const init = async () => {
+  const getColumns = async (tablename) =>
+    await client.query(
+      `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '${tablename}';`
+    );
+
+  const getConstraints = async (type, tablename) =>
     await client.query(
       `SELECT
 tc.constraint_name, 
@@ -40,11 +45,13 @@ FROM
   JOIN information_schema.constraint_column_usage AS ccu
     ON ccu.constraint_name = tc.constraint_name
     AND ccu.table_schema = tc.table_schema
-WHERE tc.constraint_type = '${type}' AND tc.table_name='${table}';`
+WHERE tc.constraint_type = '${type}' AND tc.table_name='${tablename}';`
     );
 
-  const createScript = (columns, pks, fks) => {
-    const table_name = tablename;
+  const createScript = async (tablename) => {
+    const { rows: pks } = await getConstraints('PRIMARY KEY', tablename);
+    const { rows: fks } = await getConstraints('FOREIGN KEY', tablename);
+    const { rows: columns } = await getColumns(tablename);
 
     const prepareDataType = (column) => {
       const data_type = column.data_type;
@@ -100,7 +107,7 @@ WHERE tc.constraint_type = '${type}' AND tc.table_name='${table}';`
     const fkRows = addFKs(fks);
 
     const boilerplate = `
-CREATE TABLE ${table_name} (
+CREATE TABLE ${tablename} (
 ${columns
   .map((col) => {
     return `\t"${col.column_name}" ${prepareDataType(col)}${prepareConstraints(
@@ -108,18 +115,17 @@ ${columns
     )}`;
   })
   .join(',\n')}${pkRows ? ',\n' + pkRows : ''}${fkRows ? ',\n' + fkRows : ''}
-);`;
+);
+`;
 
     return boilerplate;
   };
 
-  const { rows: pks } = await getConstraints('PRIMARY KEY', tablename);
-  const { rows: fsk } = await getConstraints('FOREIGN KEY', tablename);
-
-  console.log(
-    'Copy this lines (Ctrl+Shift+C):\n',
-    createScript(columns.rows, pks, fsk)
-  );
+  for(const tablename of tablenames) {
+    const r = await createScript(tablename);
+    script += r;
+  };
+  fs.writeFile(path.resolve(__dirname, 'result.sql'), script);
 };
 
 init();
