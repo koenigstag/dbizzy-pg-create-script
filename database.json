@@ -1,6 +1,14 @@
 {
   "database": "boilerplate",
-  "tablename": "sessions",
+  "tablenames": [
+    "users",
+    "sessions",
+    "devices",
+    "access_keys",
+    "measurements",
+    "tolerances",
+    "users_to_keys_to_devices"
+  ],
   "user": "postgres",
   "password": "postgres",
   "host": "localhost",
