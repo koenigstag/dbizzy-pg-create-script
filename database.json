@@ -1,5 +1,5 @@
 {
-  "dbname": "boilerplate",
+  "database": "boilerplate",
   "tablename": "sessions",
   "user": "postgres",
   "password": "postgres",

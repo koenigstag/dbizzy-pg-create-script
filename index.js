@@ -1,18 +1,25 @@
 const { Client } = require('pg');
-const database = require('./database.json');
+const {
+  database,
+  tablename,
+  user,
+  host,
+  password,
+  port,
+} = require('./database.json');
 
 const client = new Client({
-  database: database.dbname,
-  user: database.user,
-  host: database.host,
-  password: database.password,
-  port: database.port,
+  database,
+  user,
+  host,
+  password,
+  port,
 });
 client.connect();
 
 const init = async () => {
   const columns = await client.query(
-    `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '${database.tablename}';`
+    `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '${tablename}';`
   );
 
   const getConstraints = async (type, table) =>
@@ -37,7 +44,7 @@ WHERE tc.constraint_type = '${type}' AND tc.table_name='${table}';`
     );
 
   const createScript = (columns, pks, fks) => {
-    const table_name = database.tablename;
+    const table_name = tablename;
 
     const prepareDataType = (column) => {
       const data_type = column.data_type;
@@ -99,8 +106,8 @@ ${columns
     return boilerplate;
   };
 
-  const { rows: pks } = await getConstraints('PRIMARY KEY', database.tablename);
-  const { rows: fsk } = await getConstraints('FOREIGN KEY', database.tablename);
+  const { rows: pks } = await getConstraints('PRIMARY KEY', tablename);
+  const { rows: fsk } = await getConstraints('FOREIGN KEY', tablename);
 
   console.log(createScript(columns.rows, pks, fsk));
 };
