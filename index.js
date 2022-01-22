@@ -66,7 +66,13 @@ WHERE tc.constraint_type = '${type}' AND tc.table_name='${table}';`
       const column_default = column.column_default;
 
       const meta = `${is_nullable === 'NO' ? ' NOT NULL' : ''}${
-        column_default ? ` DEFAULT ${column_default}` : ``
+        column_default
+          ? ` DEFAULT ${
+              column_default === 'true' || column_default === 'false'
+                ? column_default.toUpperCase()
+                : column_default
+            }`
+          : ``
       }`;
 
       return `${meta}`;
@@ -93,7 +99,8 @@ WHERE tc.constraint_type = '${type}' AND tc.table_name='${table}';`
     const pkRows = addPKs(pks);
     const fkRows = addFKs(fks);
 
-    const boilerplate = `CREATE TABLE ${table_name} (
+    const boilerplate = `
+CREATE TABLE ${table_name} (
 ${columns
   .map((col) => {
     return `\t"${col.column_name}" ${prepareDataType(col)}${prepareConstraints(
@@ -109,7 +116,10 @@ ${columns
   const { rows: pks } = await getConstraints('PRIMARY KEY', tablename);
   const { rows: fsk } = await getConstraints('FOREIGN KEY', tablename);
 
-  console.log(createScript(columns.rows, pks, fsk));
+  console.log(
+    'Copy this lines (Ctrl+Shift+C):\n',
+    createScript(columns.rows, pks, fsk)
+  );
 };
 
 init();
