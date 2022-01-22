@@ -78,7 +78,7 @@ WHERE tc.constraint_type = '${type}' AND tc.table_name='${table}';`
       return fks
         .map(
           (fk) =>
-            `CONSTRAINT "${fk.constraint_name}" FOREIGN KEY "${fk.foreign_table_name}".("${fk.fireign_column_name}")`
+            `CONSTRAINT "${fk.constraint_name}" FOREIGN KEY ("${fk.column_name}") REFERENCES "${fk.foreign_table_name}"("${fk.foreign_column_name}")`
         )
         .join(',\n\t');
     };
