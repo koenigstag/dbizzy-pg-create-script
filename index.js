@@ -19,9 +19,7 @@ const client = new Client({
 });
 client.connect();
 
-let script = '';
-
-const init = async () => {
+(async () => {
   const getColumns = async (tablename) =>
     await client.query(
       `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '${tablename}';`
@@ -121,11 +119,10 @@ ${columns
     return boilerplate;
   };
 
-  for(const tablename of tablenames) {
-    const r = await createScript(tablename);
-    script += r;
-  };
-  fs.writeFile(path.resolve(__dirname, 'result.sql'), script);
-};
-
-init();
+  let script = '';
+  for (const tablename of tablenames) {
+    script += await createScript(tablename);
+  }
+  
+  await fs.writeFile(path.resolve(__dirname, 'result.sql'), script);
+})();
