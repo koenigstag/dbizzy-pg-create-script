@@ -4,10 +4,13 @@
     "users",
     "sessions",
     "devices",
+    "access_key_types",
     "access_keys",
+    "unit_types",
     "measurements",
     "tolerances",
-    "users_to_keys_to_devices"
+    "users_to_devices",
+    "measurement_history"
   ],
   "user": "postgres",
   "password": "postgres",
