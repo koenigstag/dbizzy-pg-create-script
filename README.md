@@ -1,7 +1,7 @@
 # DBIZZY-PG-CREATE-SCRIPT
 
 ## Purpose
-This project is used as a tool for generation of sql create scripts for [PostgreSQL](https://www.postgresql.org/) database.
+This project is used as a tool for generation of sql create scripts from ready [PostgreSQL](https://www.postgresql.org/) database.
 
 This project uses [node-postgres](https://node-postgres.com/) package to connect ready PostgreSQL database and query table columns, their types, Primary Key and Foreign Key constraints.
 
